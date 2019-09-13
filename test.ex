@@ -1,12 +1,11 @@
 defmodule Runner do
+
     def main do
-        file = File.open!("out.convote", [:read])
-        reader(file)
+        reader(File.open!("out.convote", [:read]))
     end
 
     def reader(reader_file) do
-         page = String.split(IO.read(reader_file, :all), "\n")
-         populate(page, %{})
+         populate(String.split(IO.read(reader_file, :all), "\n"), %{})
     end
 
     def populate([], map) do
@@ -17,28 +16,19 @@ defmodule Runner do
         items = String.split(head, " ") |> Enum.slice(0,2)
         key = List.first(items) |> String.to_integer
         value = List.last(items) |> String.to_integer
-        populate(tail, check_nil(map, key, value))
+        populate(tail, check_nil_and_update(map, key, value))
     end
 
-    def check_nil(map, key, value) do
+    def check_nil_and_update(map, key, value) do
         if Map.get(map, key) != nil do
-            in_map(key, value, map)
+            Map.replace!(map, key, populate_set(map[key], value))
         else
-            not_in_map(key, value, map)
+            Map.put_new(map, key, populate_set(MapSet.new(), value))
         end
-    end
-
-    def in_map(key, value, map) do
-        Map.replace!(map, key, populate_set(map[key], value))
-    end
-
-    def not_in_map(key, value, map) do
-        Map.put_new(map, key, populate_set(MapSet.new(), value))
     end
 
     def populate_set(set, add_this) do
         MapSet.union(set, MapSet.put(MapSet.new(), add_this))
     end
-
 
 end
